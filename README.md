@@ -1,6 +1,6 @@
 # Nisa Gallery — Django Image Gallery
 
-A dark, elegant photo gallery built with Django: masonry grid, category filters, search, and a live like button.
+A dark, elegant photo gallery built with Django: masonry grid, category filters, search, live like button, and a drag-and-drop upload page.
 
 ## Run it
 
@@ -31,8 +31,12 @@ python manage.py import_photos
 
 Any image file sitting there that isn't already in the database gets registered as a new `Photo` (add category/title/etc. afterwards from the admin panel if needed).
 
+## Uploading via the website
+
+The "Upload" button in the header opens a form to add a photo straight from the browser. Note: on Vercel the deployed filesystem is read-only, so uploads there will fail — this only works reliably when running locally (or once a durable storage backend like Vercel Blob or S3 is wired up).
+
 ## Structure
 
-- `gallery/` — the app: models (`Category`, `Photo`), views, admin, templates, static assets
+- `gallery/` — the app: models (`Category`, `Photo`), views, forms, admin, templates, static assets
 - `gallery_site/` — Django project settings/urls
 - `media/` — gallery images (`media/photos/`)

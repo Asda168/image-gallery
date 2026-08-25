@@ -67,6 +67,7 @@
 {% else %}
 <div class="empty-state">
   <p>No photos here yet.</p>
+  <a href="{% url 'gallery:upload' %}" class="btn btn-primary">Upload the first one</a>
 </div>
 {% endif %}
 

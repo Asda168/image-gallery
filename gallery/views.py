@@ -1,8 +1,10 @@
+from django.contrib import messages
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from .forms import PhotoUploadForm
 from .models import Category, Photo
 
 
@@ -40,6 +42,18 @@ def photo_detail(request, slug):
         else Photo.objects.exclude(pk=photo.pk)[:6]
     )
     return render(request, "gallery/detail.html", {"photo": photo, "related": related})
+
+
+def upload_photo(request):
+    if request.method == "POST":
+        form = PhotoUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save()
+            messages.success(request, "Your photo has been added to the gallery.")
+            return redirect(photo.get_absolute_url())
+    else:
+        form = PhotoUploadForm()
+    return render(request, "gallery/upload.html", {"form": form})
 
 
 @require_POST
