@@ -1,0 +1,72 @@
+{% extends "gallery/base.html" %}
+{% block title %}{{ photo.title }} — Nisa Gallery{% endblock %}
+{% block content %}
+
+<section class="detail">
+  <a href="{% url 'gallery:home' %}" class="back-link">&larr; Back to gallery</a>
+
+  <div class="detail-grid">
+    <div class="detail-image lightbox-trigger"
+         data-full="{{ photo.image.url }}"
+         data-title="{{ photo.title }}"
+         data-category="{{ photo.category.name|default:'' }}"
+         data-detail="{{ photo.get_absolute_url }}"
+         tabindex="0" role="button" aria-label="View {{ photo.title }} full screen">
+      <img src="{{ photo.image.url }}" alt="{{ photo.title }}">
+    </div>
+    <div class="detail-info">
+      {% if photo.category %}<span class="tag">{{ photo.category.name }}</span>{% endif %}
+      <h1>{{ photo.title }}</h1>
+      {% if photo.photographer %}<p class="by-line">by {{ photo.photographer }}</p>{% endif %}
+      {% if photo.description %}<p class="description">{{ photo.description }}</p>{% endif %}
+
+      <div class="detail-actions">
+        <button class="btn btn-like" data-like-url="{% url 'gallery:like_photo' photo.slug %}">
+          <span class="heart">♥</span> <span class="like-count">{{ photo.likes }}</span>
+        </button>
+        <a href="{{ photo.image.url }}" download class="btn btn-ghost">Download</a>
+      </div>
+
+      <dl class="meta-list">
+        <div><dt>Uploaded</dt><dd>{{ photo.uploaded_at|date:"F j, Y" }}</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+{% if related %}
+<section class="related">
+  <h2>More like this</h2>
+  <div class="related-grid">
+    {% for r in related %}
+    <a href="{{ r.get_absolute_url }}" class="related-card">
+      <img src="{{ r.image.url }}" alt="{{ r.title }}" loading="lazy">
+      <span>{{ r.title }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelector('.btn-like')?.addEventListener('click', async function () {
+  const url = this.dataset.likeUrl;
+  const countEl = this.querySelector('.like-count');
+  const csrftoken = document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1];
+  this.classList.add('liked');
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    const data = await res.json();
+    countEl.textContent = data.likes;
+  } catch (e) {
+    this.classList.remove('liked');
+  }
+});
+</script>
+{% endblock %}

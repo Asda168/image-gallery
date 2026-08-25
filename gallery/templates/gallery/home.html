@@ -1,0 +1,71 @@
+{% extends "gallery/base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-kicker">A curated collection</p>
+    <h1 class="hero-title">Light, Framed.</h1>
+    <p class="hero-sub">Moments worth pausing for — browse, filter, and share the collection.</p>
+  </div>
+  <div class="hero-glow"></div>
+</section>
+
+{% if featured %}
+<section class="featured-strip">
+  <div class="featured-track">
+    {% for photo in featured %}
+    <a href="{{ photo.get_absolute_url }}" class="featured-card">
+      <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
+      <div class="featured-caption">
+        <span class="featured-star">★ Featured</span>
+        <h3>{{ photo.title }}</h3>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="filter-bar">
+  <div class="filter-pills">
+    <a href="{% url 'gallery:home' %}" class="pill {% if not active_slug %}pill-active{% endif %}">All</a>
+    {% for cat in categories %}
+    <a href="?category={{ cat.slug }}" class="pill {% if active_slug == cat.slug %}pill-active{% endif %}">{{ cat.name }}</a>
+    {% endfor %}
+  </div>
+  <p class="result-count">{{ total_count }} photo{{ total_count|pluralize }}</p>
+</section>
+
+{% if photos %}
+<section class="masonry">
+  {% for photo in photos %}
+  <figure class="masonry-item lightbox-trigger" style="--i:{{ forloop.counter0 }}"
+          data-full="{{ photo.image.url }}"
+          data-title="{{ photo.title }}"
+          data-category="{{ photo.category.name|default:'' }}"
+          data-detail="{{ photo.get_absolute_url }}"
+          tabindex="0" role="button" aria-label="View {{ photo.title }} full screen">
+    <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
+    <span class="zoom-hint" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M9 3a6 6 0 1 0 3.87 10.6l4.76 4.77a1 1 0 0 0 1.42-1.42l-4.77-4.76A6 6 0 0 0 9 3Zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm-1 2h2v1h1v2h-1v1H8v-1H7V9h1V7Z"/></svg>
+    </span>
+    <figcaption class="masonry-overlay">
+      <h3>{{ photo.title }}</h3>
+      <div class="overlay-meta">
+        {% if photo.category %}<span class="tag">{{ photo.category.name }}</span>{% endif %}
+        <span class="likes">♥ {{ photo.likes }}</span>
+      </div>
+      <a href="{{ photo.get_absolute_url }}" class="overlay-detail-link" onclick="event.stopPropagation()">View page &rarr;</a>
+    </figcaption>
+  </figure>
+  {% endfor %}
+</section>
+{% else %}
+<div class="empty-state">
+  <p>No photos here yet.</p>
+  <a href="{% url 'gallery:upload' %}" class="btn btn-primary">Upload the first one</a>
+</div>
+{% endif %}
+
+{% endblock %}

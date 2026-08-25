@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Nisa Gallery{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'gallery/css/style.css' %}">
+</head>
+<body>
+<div class="noise-overlay"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="{% url 'gallery:home' %}" class="brand">
+      <span class="brand-mark">✦</span>
+      <span class="brand-name">Nisa Gallery</span>
+    </a>
+
+    <form class="search-form" action="{% url 'gallery:home' %}" method="get">
+      <svg viewBox="0 0 24 24" class="icon-search"><path d="M10 3a7 7 0 1 0 4.9 12.02l4.54 4.54a1 1 0 0 0 1.42-1.42l-4.54-4.54A7 7 0 0 0 10 3Zm-5 7a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
+      <input type="text" name="q" placeholder="Search photos..." value="{{ query }}">
+    </form>
+
+    <nav class="header-nav">
+      <a href="{% url 'gallery:upload' %}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" class="icon-plus"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>
+        Upload
+      </a>
+      <a href="{% url 'admin:index' %}" class="btn btn-ghost">Admin</a>
+    </nav>
+  </div>
+</header>
+
+{% if messages %}
+<div class="messages">
+  {% for message in messages %}
+    <div class="message message-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <p>Nisa Gallery &middot; crafted with Django &middot; {% now "Y" %}</p>
+</footer>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous photo">&larr;</button>
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next photo">&rarr;</button>
+  <div class="lightbox-stage">
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption">
+      <div>
+        <h3 id="lightboxTitle"></h3>
+        <span class="tag" id="lightboxCategory"></span>
+      </div>
+      <a href="#" id="lightboxDetailLink" class="btn btn-ghost">View full page &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'gallery/js/script.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
