@@ -8,5 +8,7 @@ urlpatterns = [
     path('', include('gallery.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Served unconditionally (not just in DEBUG) so the committed seed photos
+# are reachable on Vercel too, where DEBUG is off but the media/ dir still
+# ships as part of the deployment bundle.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

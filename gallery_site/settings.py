@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-yh#s!@zrs^0th83gx41sst!mzfsw8n-5gl9n9&41h=*x7i_cpr'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY', 'django-insecure-yh#s!@zrs^0th83gx41sst!mzfsw8n-5gl9n9&41h=*x7i_cpr'
+)
+
+# Vercel sets VERCEL=1 on every deployment (preview and production).
+ON_VERCEL = os.environ.get('VERCEL') == '1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', '' if ON_VERCEL else 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h]
+
+# Vercel exposes the current deployment's own hostname here (no scheme).
+if os.environ.get('VERCEL_URL'):
+    ALLOWED_HOSTS.append(os.environ['VERCEL_URL'])
+
+# Custom production domain(s) assigned to the Vercel project, if any.
+if os.environ.get('VERCEL_PROJECT_PRODUCTION_URL'):
+    ALLOWED_HOSTS.append(os.environ['VERCEL_PROJECT_PRODUCTION_URL'])
+
+if ON_VERCEL:
+    # Covers every *.vercel.app preview/production URL for this account.
+    ALLOWED_HOSTS.append('.vercel.app')
+
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+CSRF_TRUSTED_ORIGINS = [f'https://{h}' for h in ALLOWED_HOSTS if not h.startswith('.')]
+CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
+
+if ON_VERCEL:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
@@ -42,6 +72,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,9 +107,21 @@ WSGI_APPLICATION = 'gallery_site.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # On Vercel db.sqlite3 (gitignored, writable locally) isn't deployed;
+        # fall back to the read-only seed.sqlite3 snapshot committed to git
+        # so the demo gallery has data to show. Writes will still fail there
+        # (see DATABASE_URL note below) since the filesystem is read-only.
+        'NAME': (BASE_DIR / 'seed.sqlite3') if ON_VERCEL else (BASE_DIR / 'db.sqlite3'),
     }
 }
+
+# Vercel's filesystem is read-only at runtime, so SQLite (a file on disk)
+# cannot be written to there. Point DATABASE_URL at a real hosted database
+# (e.g. a Vercel Postgres / Neon integration) to make data persist in prod.
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+
+    DATABASES['default'] = dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
 
 
 # Password validation
@@ -116,9 +159,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# No separate collectstatic build step is configured on Vercel, so WhiteNoise
+# serves static files directly from each app's static/ dir via Django's finders.
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# NOTE: on Vercel this directory is read-only (it's part of the deployed
+# bundle), so it can serve the committed seed photos but new uploads will
+# fail to save. Use a real storage backend (e.g. Vercel Blob or S3) for
+# durable uploads in production.
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
