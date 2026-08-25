@@ -1,6 +1,6 @@
 # Nisa Gallery — Django Image Gallery
 
-A dark, elegant photo gallery built with Django: masonry grid, category filters, search, live like button, and a drag-and-drop upload page.
+A dark, elegant photo gallery built with Django: masonry grid, category filters, search, and a live like button.
 
 ## Run it
 
@@ -21,8 +21,18 @@ python manage.py seed_gallery --flush
 
 Generates placeholder photos with Pillow so the gallery looks populated without needing external images.
 
+## Add photos from media/photos/
+
+Drop image files directly into `media/photos/`, then run:
+
+```bash
+python manage.py import_photos
+```
+
+Any image file sitting there that isn't already in the database gets registered as a new `Photo` (add category/title/etc. afterwards from the admin panel if needed).
+
 ## Structure
 
-- `gallery/` — the app: models (`Category`, `Photo`), views, forms, admin, templates, static assets
+- `gallery/` — the app: models (`Category`, `Photo`), views, admin, templates, static assets
 - `gallery_site/` — Django project settings/urls
-- `media/` — uploaded images (created at runtime)
+- `media/` — gallery images (`media/photos/`)

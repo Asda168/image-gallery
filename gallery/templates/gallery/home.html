@@ -50,6 +50,9 @@
     <span class="zoom-hint" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M9 3a6 6 0 1 0 3.87 10.6l4.76 4.77a1 1 0 0 0 1.42-1.42l-4.77-4.76A6 6 0 0 0 9 3Zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm-1 2h2v1h1v2h-1v1H8v-1H7V9h1V7Z"/></svg>
     </span>
+    <a href="{{ photo.image.url }}" download class="download-hint" aria-label="Download {{ photo.title }}" onclick="event.stopPropagation()">
+      <svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1ZM5 19h14v2H5v-2Z"/></svg>
+    </a>
     <figcaption class="masonry-overlay">
       <h3>{{ photo.title }}</h3>
       <div class="overlay-meta">
@@ -64,7 +67,6 @@
 {% else %}
 <div class="empty-state">
   <p>No photos here yet.</p>
-  <a href="{% url 'gallery:upload' %}" class="btn btn-primary">Upload the first one</a>
 </div>
 {% endif %}
 
