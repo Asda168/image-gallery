@@ -8,6 +8,15 @@
     <h1 class="hero-title">Light, Framed.</h1>
     <p class="hero-sub">Moments worth pausing for — browse, filter, and share the collection.</p>
   </div>
+  {% if featured %}
+  <div class="hero-collage">
+    {% for photo in featured %}
+    <a href="{{ photo.get_absolute_url }}" class="hero-collage-item hero-collage-item-{{ forloop.counter }}">
+      <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
   <div class="hero-glow"></div>
 </section>
 
