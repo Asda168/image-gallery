@@ -10,14 +10,16 @@
     {% csrf_token %}
 
     <label class="dropzone" id="dropzone">
-      <input type="file" name="{{ form.image.html_name }}" id="id_image" accept="image/*" required>
+      <input type="file" name="{{ form.image.html_name }}" id="id_image" accept="image/*" multiple required>
       <div class="dropzone-content" id="dropzone-content">
         <svg viewBox="0 0 24 24" class="icon-upload"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5z"/></svg>
-        <p>Drag an image here, or click to browse</p>
+        <p>Drag &amp; drop photos here, or <span class="dropzone-browse">browse files</span></p>
       </div>
-      <img id="preview" class="preview-img" alt="" hidden>
     </label>
     {% if form.image.errors %}<p class="field-error">{{ form.image.errors|striptags }}</p>{% endif %}
+
+    <div class="preview-grid" id="previewGrid" hidden></div>
+    <p class="upload-hint" id="uploadHint" hidden></p>
 
     <div class="form-row">
       <label for="{{ form.title.id_for_label }}">Title</label>
@@ -41,7 +43,11 @@
       </div>
     </div>
 
-    <button type="submit" class="btn btn-primary btn-wide">Publish to gallery</button>
+    <div class="upload-progress" id="uploadProgress" hidden>
+      <div class="upload-progress-bar" id="uploadProgressBar"></div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-wide" id="submitBtn">Publish to gallery</button>
   </form>
 </section>
 
@@ -50,17 +56,66 @@
 {% block extra_js %}
 <script>
 const input = document.getElementById('id_image');
-const preview = document.getElementById('preview');
 const content = document.getElementById('dropzone-content');
 const dropzone = document.getElementById('dropzone');
+const previewGrid = document.getElementById('previewGrid');
+const uploadHint = document.getElementById('uploadHint');
+const form = document.querySelector('.upload-form');
+const submitBtn = document.getElementById('submitBtn');
+const progressWrap = document.getElementById('uploadProgress');
+const progressBar = document.getElementById('uploadProgressBar');
 
-input.addEventListener('change', () => {
-  const file = input.files[0];
-  if (!file) return;
-  preview.src = URL.createObjectURL(file);
-  preview.hidden = false;
-  content.hidden = true;
-});
+let selectedFiles = [];
+
+function syncInputFiles() {
+  const dt = new DataTransfer();
+  selectedFiles.forEach(f => dt.items.add(f));
+  input.files = dt.files;
+}
+
+function renderPreviews() {
+  previewGrid.innerHTML = '';
+  previewGrid.hidden = selectedFiles.length === 0;
+  content.hidden = selectedFiles.length > 0;
+
+  selectedFiles.forEach((file, index) => {
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.alt = file.name;
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'preview-remove';
+    remove.setAttribute('aria-label', `Remove ${file.name}`);
+    remove.innerHTML = '&times;';
+    remove.addEventListener('click', () => {
+      selectedFiles.splice(index, 1);
+      syncInputFiles();
+      renderPreviews();
+    });
+    item.appendChild(img);
+    item.appendChild(remove);
+    previewGrid.appendChild(item);
+  });
+
+  if (selectedFiles.length > 1) {
+    uploadHint.hidden = false;
+    uploadHint.textContent = `${selectedFiles.length} photos selected — shared title/category/description will apply to each.`;
+  } else {
+    uploadHint.hidden = true;
+  }
+}
+
+function addFiles(fileList) {
+  Array.from(fileList).forEach(f => {
+    if (f.type.startsWith('image/')) selectedFiles.push(f);
+  });
+  syncInputFiles();
+  renderPreviews();
+}
+
+input.addEventListener('change', () => addFiles(input.files));
 
 ['dragover', 'dragleave', 'drop'].forEach(evt => {
   dropzone.addEventListener(evt, e => {
@@ -68,9 +123,28 @@ input.addEventListener('change', () => {
     dropzone.classList.toggle('dragover', evt === 'dragover');
   });
 });
-dropzone.addEventListener('drop', e => {
-  input.files = e.dataTransfer.files;
-  input.dispatchEvent(new Event('change'));
+dropzone.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Uploading…';
+  progressWrap.hidden = false;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', form.action || window.location.href, true);
+  xhr.upload.onprogress = (evt) => {
+    if (evt.lengthComputable) {
+      progressBar.style.width = Math.round((evt.loaded / evt.total) * 100) + '%';
+    }
+  };
+  xhr.onload = () => {
+    document.open();
+    document.write(xhr.responseText);
+    document.close();
+  };
+  xhr.onerror = () => form.submit();
+  xhr.send(new FormData(form));
 });
 </script>
 {% endblock %}

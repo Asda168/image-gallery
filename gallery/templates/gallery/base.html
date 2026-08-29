@@ -20,20 +20,35 @@
       <span class="brand-name">Nisa Gallery</span>
     </a>
 
-    <form class="search-form" action="{% url 'gallery:home' %}" method="get">
-      <svg viewBox="0 0 24 24" class="icon-search"><path d="M10 3a7 7 0 1 0 4.9 12.02l4.54 4.54a1 1 0 0 0 1.42-1.42l-4.54-4.54A7 7 0 0 0 10 3Zm-5 7a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
-      <input type="text" name="q" placeholder="Search photos..." value="{{ query }}">
+    <form class="search-form" action="{% url 'gallery:home' %}" method="get" role="search">
+      <svg viewBox="0 0 24 24" class="icon-search" aria-hidden="true"><path d="M10 3a7 7 0 1 0 4.9 12.02l4.54 4.54a1 1 0 0 0 1.42-1.42l-4.54-4.54A7 7 0 0 0 10 3Zm-5 7a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
+      <input type="text" name="q" id="searchInput" placeholder="Search photos..." value="{{ query }}" aria-label="Search photos">
+      <kbd class="search-kbd">⌘K</kbd>
     </form>
 
-    <nav class="header-nav">
-      <a href="{% url 'gallery:upload' %}" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" class="icon-plus"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>
-        Upload
+    <button type="button" class="icon-btn search-trigger" id="searchTrigger" aria-label="Open search">
+      <svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 1 0 4.9 12.02l4.54 4.54a1 1 0 0 0 1.42-1.42l-4.54-4.54A7 7 0 0 0 10 3Zm-5 7a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
+    </button>
+
+    <nav class="header-nav" aria-label="Primary">
+      <a href="{% url 'gallery:upload' %}" class="btn btn-primary" aria-label="Upload a photo">
+        <svg viewBox="0 0 24 24" class="icon-plus" aria-hidden="true"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>
+        <span class="btn-label">Upload</span>
       </a>
-      <a href="{% url 'admin:index' %}" class="btn btn-ghost">Admin</a>
+      <a href="{% url 'admin:index' %}" class="icon-btn admin-btn" aria-label="Admin panel">
+        <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.24-8 5v3h16v-3c0-2.76-3.6-5-8-5Z"/></svg>
+      </a>
     </nav>
   </div>
 </header>
+
+<div class="search-overlay" id="searchOverlay" aria-hidden="true">
+  <form class="search-overlay-form" action="{% url 'gallery:home' %}" method="get" role="search">
+    <svg viewBox="0 0 24 24" class="icon-search" aria-hidden="true"><path d="M10 3a7 7 0 1 0 4.9 12.02l4.54 4.54a1 1 0 0 0 1.42-1.42l-4.54-4.54A7 7 0 0 0 10 3Zm-5 7a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
+    <input type="text" name="q" id="searchOverlayInput" placeholder="Search photos..." value="{{ query }}" aria-label="Search photos">
+    <button type="button" class="icon-btn" id="searchOverlayClose" aria-label="Close search">&times;</button>
+  </form>
+</div>
 
 {% if messages %}
 <div class="messages">
@@ -57,6 +72,7 @@
   <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next photo">&rarr;</button>
   <div class="lightbox-stage">
     <img id="lightboxImg" src="" alt="">
+    <span class="lightbox-counter" id="lightboxCounter"></span>
     <div class="lightbox-caption">
       <div>
         <h3 id="lightboxTitle"></h3>

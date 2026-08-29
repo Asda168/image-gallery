@@ -2,11 +2,16 @@
 {% load static %}
 {% block content %}
 
+{% if not query %}
 <section class="hero">
   <div class="hero-inner">
     <p class="hero-kicker">A curated collection</p>
-    <h1 class="hero-title">Light, Framed.</h1>
-    <p class="hero-sub">Moments worth pausing for — browse, filter, and share the collection.</p>
+    <h1 class="hero-title">Light. Moments. Stories.</h1>
+    <p class="hero-sub">A curated collection of photographs, moments, places and visual stories.</p>
+    <div class="hero-actions">
+      <a href="#gallery" class="btn btn-primary">Explore Gallery</a>
+      {% if featured %}<a href="#featured" class="btn btn-ghost">View Featured</a>{% endif %}
+    </div>
   </div>
   {% if featured %}
   <div class="hero-collage">
@@ -15,16 +20,20 @@
       <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
     </a>
     {% endfor %}
+    <span class="hero-count">{{ all_count }} Photos</span>
   </div>
   {% endif %}
   <div class="hero-glow"></div>
 </section>
 
 {% if featured %}
-<section class="featured-strip">
-  <div class="featured-track">
+<section class="featured-section" id="featured">
+  <div class="featured-heading">
+    <h2>Featured</h2>
+  </div>
+  <div class="featured-grid">
     {% for photo in featured %}
-    <a href="{{ photo.get_absolute_url }}" class="featured-card">
+    <a href="{{ photo.get_absolute_url }}" class="featured-card {% if forloop.first %}featured-card-main{% else %}featured-card-side{% endif %}">
       <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
       <div class="featured-caption">
         <span class="featured-star">★ Featured</span>
@@ -35,14 +44,22 @@
   </div>
 </section>
 {% endif %}
+{% endif %}
 
-<section class="filter-bar">
+<section class="filter-bar" id="gallery">
+  {% if query %}
+  <div class="search-heading">
+    <p class="search-kicker">Search results</p>
+    <h2>&ldquo;{{ query }}&rdquo;</h2>
+  </div>
+  {% else %}
   <div class="filter-pills">
     <a href="{% url 'gallery:home' %}" class="pill {% if not active_slug %}pill-active{% endif %}">All</a>
     {% for cat in categories %}
     <a href="?category={{ cat.slug }}" class="pill {% if active_slug == cat.slug %}pill-active{% endif %}">{{ cat.name }}</a>
     {% endfor %}
   </div>
+  {% endif %}
   <p class="result-count">{{ total_count }} photo{{ total_count|pluralize }}</p>
 </section>
 
@@ -53,6 +70,7 @@
           data-full="{{ photo.image.url }}"
           data-title="{{ photo.title }}"
           data-category="{{ photo.category.name|default:'' }}"
+          data-date="{{ photo.uploaded_at|date:'Y' }}"
           data-detail="{{ photo.get_absolute_url }}"
           tabindex="0" role="button" aria-label="View {{ photo.title }} full screen">
     <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
@@ -66,6 +84,7 @@
       <h3>{{ photo.title }}</h3>
       <div class="overlay-meta">
         {% if photo.category %}<span class="tag">{{ photo.category.name }}</span>{% endif %}
+        <span class="overlay-date">{{ photo.uploaded_at|date:"Y" }}</span>
         <span class="likes">♥ {{ photo.likes }}</span>
       </div>
       <a href="{{ photo.get_absolute_url }}" class="overlay-detail-link" onclick="event.stopPropagation()">View page &rarr;</a>
@@ -75,8 +94,18 @@
 </section>
 {% else %}
 <div class="empty-state">
+  {% if query %}
+  <p>No photos found.</p>
+  <p class="empty-sub">Try another keyword.</p>
+  <a href="{% url 'gallery:home' %}" class="btn btn-primary">View All Photos</a>
+  {% elif active_slug %}
+  <p>No photos here yet.</p>
+  <p class="empty-sub">Explore another collection.</p>
+  <a href="{% url 'gallery:home' %}" class="btn btn-primary">View All Photos</a>
+  {% else %}
   <p>No photos here yet.</p>
   <a href="{% url 'gallery:upload' %}" class="btn btn-primary">Upload the first one</a>
+  {% endif %}
 </div>
 {% endif %}
 

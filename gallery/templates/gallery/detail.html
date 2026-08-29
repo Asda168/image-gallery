@@ -10,6 +10,7 @@
          data-full="{{ photo.image.url }}"
          data-title="{{ photo.title }}"
          data-category="{{ photo.category.name|default:'' }}"
+         data-date="{{ photo.uploaded_at|date:'Y' }}"
          data-detail="{{ photo.get_absolute_url }}"
          tabindex="0" role="button" aria-label="View {{ photo.title }} full screen">
       <img src="{{ photo.image.url }}" alt="{{ photo.title }}">
@@ -29,6 +30,7 @@
         </button>
         <a href="{{ photo.image.url }}" download class="btn btn-ghost">Download</a>
       </div>
+      <p class="ios-hint" id="iosHint" hidden>On iPhone/iPad: tap and hold the photo, then choose "Add to Photos" to save it.</p>
 
       <dl class="meta-list">
         <div><dt>Uploaded</dt><dd>{{ photo.uploaded_at|date:"F j, Y" }}</dd></div>
@@ -55,6 +57,14 @@
 
 {% block extra_js %}
 <script>
+(function () {
+  const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS) {
+    document.getElementById('iosHint')?.removeAttribute('hidden');
+  }
+})();
+
 document.querySelector('.btn-like')?.addEventListener('click', async function () {
   const url = this.dataset.likeUrl;
   const countEl = this.querySelector('.like-count');
