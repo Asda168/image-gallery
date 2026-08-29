@@ -17,7 +17,7 @@
   <div class="hero-collage">
     {% for photo in featured %}
     <a href="{{ photo.get_absolute_url }}" class="hero-collage-item hero-collage-item-{{ forloop.counter }}">
-      <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
+      <img src="{{ photo.thumb_url }}" alt="{{ photo.title }}" loading="lazy">
     </a>
     {% endfor %}
     <span class="hero-count">{{ all_count }} Photos</span>
@@ -34,7 +34,7 @@
   <div class="featured-grid">
     {% for photo in featured %}
     <a href="{{ photo.get_absolute_url }}" class="featured-card {% if forloop.first %}featured-card-main{% else %}featured-card-side{% endif %}">
-      <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
+      <img src="{{ photo.thumb_url }}" alt="{{ photo.title }}" loading="lazy">
       <div class="featured-caption">
         <span class="featured-star">★ Featured</span>
         <h3>{{ photo.title }}</h3>
@@ -73,7 +73,7 @@
           data-date="{{ photo.uploaded_at|date:'Y' }}"
           data-detail="{{ photo.get_absolute_url }}"
           tabindex="0" role="button" aria-label="View {{ photo.title }} full screen">
-    <img src="{{ photo.image.url }}" alt="{{ photo.title }}" loading="lazy">
+    <img src="{{ photo.thumb_url }}" alt="{{ photo.title }}" loading="lazy">
     <span class="zoom-hint" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M9 3a6 6 0 1 0 3.87 10.6l4.76 4.77a1 1 0 0 0 1.42-1.42l-4.77-4.76A6 6 0 0 0 9 3Zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm-1 2h2v1h1v2h-1v1H8v-1H7V9h1V7Z"/></svg>
     </span>

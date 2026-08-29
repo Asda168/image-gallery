@@ -45,7 +45,7 @@
   <div class="related-grid">
     {% for r in related %}
     <a href="{{ r.get_absolute_url }}" class="related-card">
-      <img src="{{ r.image.url }}" alt="{{ r.title }}" loading="lazy">
+      <img src="{{ r.thumb_url }}" alt="{{ r.title }}" loading="lazy">
       <span>{{ r.title }}</span>
     </a>
     {% endfor %}
